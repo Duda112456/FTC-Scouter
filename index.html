@@ -9,7 +9,7 @@
         body { background-color: #0b081d; color: #f1f5f9; }
     </style>
 </head>
-<body class="p-4 max-w-[1600px] mx-auto h-screen flex flex-col">
+<body class="p-4 max-w-[1600px] mx-auto h-screen flex flex-col relative">
 
     <header class="mb-4 text-center border-b border-[#16113a] pb-3 shrink-0">
         <h1 class="text-3xl font-extrabold text-[#17b6ff] tracking-wider drop-shadow-[0_2px_8px_rgba(23,182,255,0.2)]">
@@ -17,7 +17,7 @@
         </h1>
     </header>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-1 min-h-0 mb-4">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-1 min-h-0 mb-6">
         
         <div class="bg-[#16113a]/80 rounded-xl p-4 border border-[#d6682a]/40 flex flex-col h-full shadow-lg shadow-black/40">
             <div class="flex items-center justify-between mb-3 shrink-0">
@@ -122,8 +122,11 @@
         </div>
     </div>
 
+    <div class="absolute bottom-2 right-4 text-[10px] font-mono tracking-widest font-bold text-[#d6682a]/60 bg-[#16113a]/40 border border-[#d6682a]/20 px-2 py-0.5 rounded shadow-sm select-none z-50">
+        BUILD v1.0.0
+    </div>
+
     <script>
-        // Paste your free Read API key from your thebluealliance.com account dashboard here:
         const TBA_API_KEY = "YOUR_THE_BLUE_ALLIANCE_API_KEY"; 
 
         let teamsData = JSON.parse(localStorage.getItem('ftcDecodeData')) || [];
@@ -137,9 +140,7 @@
         const videoFrame = document.getElementById('videoFrame');
         const matchQueue = document.getElementById('matchQueue');
         const matchLabel = document.getElementById('matchLabel');
-        const placeholderText = document.getElementById('placeholderText');
 
-        // Fetch verified match videos natively from TBA API
         loadVideoBtn.addEventListener('click', async () => {
             const teamInput = document.getElementById('teamNumber').value.trim();
             if (!teamInput) {
@@ -152,10 +153,9 @@
                 return;
             }
 
-            matchQueue.innerHTML = `<p class="text-cyan-400 animate-pulse p-2">Decrypting match archives from API stream...</p>`;
+            matchQueue.innerHTML = `<p class="text-[#17b6ff] animate-pulse p-2">Decrypting match archives from API stream...</p>`;
             
             try {
-                // TBA formats all FTC team IDs as 'frc12345' (reusing structure for FTC query parameters)
                 const teamKey = `frc${teamInput}`;
                 const response = await fetch(`https://www.thebluealliance.com/api/v3/team/${teamKey}/matches`, {
                     headers: { 'X-TBA-Auth-Key': TBA_API_KEY }
@@ -164,8 +164,6 @@
                 if (!response.ok) throw new Error("Team not found or database down.");
                 
                 const matches = await response.json();
-                
-                // Isolate matches that contain verified video payloads
                 const videoMatches = matches.filter(m => m.videos && m.videos.length > 0);
 
                 if (videoMatches.length === 0) {
@@ -173,10 +171,9 @@
                     return;
                 }
 
-                // Render match choices natively inside the queue wrapper
                 matchQueue.innerHTML = videoMatches.map(match => {
                     const ytId = match.videos[0].key;
-                    const cleanName = match.key.split('_')[1].toUpperCase(); // clean title formatting (e.g., qm12)
+                    const cleanName = match.key.split('_')[1].toUpperCase();
                     return `
                         <button onclick="playNativeVideo('${ytId}', '${cleanName}')" class="w-full text-left p-2.5 my-1 rounded bg-[#16113a] border border-cyan-900/30 hover:border-[#17b6ff] hover:text-white transition cursor-pointer flex justify-between items-center">
                             <span class="font-bold text-slate-200">Match: ${cleanName}</span>
@@ -191,16 +188,13 @@
             }
         });
 
-        // Fire direct native stream inside workspace
         window.playNativeVideo = function(youtubeId, name) {
             videoPlaceholder.classList.add('hidden');
             videoFrame.classList.remove('hidden');
-            // Hardcoded direct tracking URL format avoids YouTube embedding blocks entirely
             videoFrame.src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`;
             matchLabel.innerText = `Active Stream: Match ${name}`;
         };
 
-        // Form submission logic
         matchForm.addEventListener('submit', (e) => {
             e.preventDefault();
 
