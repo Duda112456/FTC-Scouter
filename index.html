@@ -3,94 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FTC Decode Scouting & Leaderboard</title>
+    <title>FTC Decode Scouting Hub</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         body { background-color: #0f172a; color: #f8fafc; }
     </style>
 </head>
-<body class="p-6 max-w-7xl mx-auto">
+<body class="p-4 max-w-[1600px] mx-auto h-screen flex flex-col">
 
-    <header class="mb-8 text-center border-b border-slate-700 pb-6">
-        <h1 class="text-4xl font-extrabold text-amber-500 tracking-wide">FTC DECODE</h1>
-        <p class="text-slate-400 mt-2">Robot Performance Tracker & Leaderboard</p>
+    <header class="mb-4 text-center border-b border-slate-700 pb-3 shrink-0">
+        <h1 class="text-3xl font-extrabold text-amber-500 tracking-wide">FTC DECODE SCOUTING HUB</h1>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="bg-slate-800 p-6 rounded-xl shadow-xl border border-slate-700 h-fit">
-            <h2 class="text-xl font-bold mb-4 text-amber-400 border-b border-slate-700 pb-2">Log Match Data</h2>
-            <form id="matchForm" class="space-y-4">
-                <div class="flex items-end gap-2">
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-slate-300">Team Number</label>
-                        <input type="number" id="teamNumber" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
-                    </div>
-                    <button type="button" id="fetchVideosBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-3 rounded-lg text-sm transition h-[46px] cursor-pointer whitespace-nowrap">
-                        🔍 Find Videos
-                    </button>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 flex-1 min-h-0 mb-4">
+        
+        <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 flex flex-col h-full">
+            <div class="flex items-center justify-between mb-3 shrink-0">
+                <h2 class="text-lg font-bold text-indigo-400">Match Video Workspace</h2>
+                <span class="text-xs text-slate-400">YouTube Player Integration</span>
+            </div>
+            
+            <div id="videoContainer" class="w-full aspect-video bg-slate-950 rounded-lg flex flex-col items-center justify-content justify-center border border-slate-700 shadow-inner relative overflow-hidden">
+                <div id="videoPlaceholder" class="text-center p-6">
+                    <span class="text-4xl">🤖</span>
+                    <p class="text-slate-400 mt-2 text-sm font-medium">Enter a team number on the right and click "Load Video Pool"</p>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-300">Team Name</label>
-                    <input type="text" id="teamName" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300">Artifacts Scored</label>
-                        <input type="number" id="artifacts" min="0" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300">Avg Cycle Time (s)</label>
-                        <input type="number" id="cycleTime" min="0" step="0.1" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300">Robot Score Contribution</label>
-                        <input type="number" id="robotScore" min="0" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300">Total Alliance Score</label>
-                        <input type="number" id="allianceScore" min="1" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md cursor-pointer">
-                    Submit Match Data
-                </button>
-            </form>
+                <iframe id="videoFrame" class="absolute inset-0 w-full h-full hidden" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+            </div>
+
+            <div class="mt-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 text-xs text-slate-400 space-y-1 overflow-y-auto flex-1">
+                <span class="font-semibold text-amber-400 block mb-1">Scouting Tips:</span>
+                <p>• Use spacebar to pause/play the video while clicking around the form.</p>
+                <p>• Track cycle times by subtracting the match timer timestamps between artifact scores.</p>
+            </div>
         </div>
 
-        <div class="lg:col-span-2 bg-slate-800 p-6 rounded-xl shadow-xl border border-slate-700">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-                <h2 class="text-xl font-bold text-amber-400">Team Leaderboard</h2>
-                <div class="flex items-center gap-2">
-                    <label class="text-sm font-medium text-slate-300 whitespace-nowrap">Sort By:</label>
-                    <select id="sortBy" class="p-2 bg-slate-900 border border-slate-600 rounded-lg text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                        <option value="artifacts">Max Artifacts Scored</option>
-                        <option value="cycleTime">Fastest Cycle Time</option>
-                        <option value="contribution">Highest Alliance Contribution %</option>
-                    </select>
+        <div class="flex flex-col h-full min-h-0 gap-4 overflow-y-auto">
+            
+            <div class="bg-slate-800 p-5 rounded-xl shadow-xl border border-slate-700 shrink-0">
+                <h2 class="text-lg font-bold mb-3 text-amber-400 border-b border-slate-700 pb-1">Log Match Data</h2>
+                <form id="matchForm" class="space-y-3">
+                    <div class="flex items-end gap-3">
+                        <div class="flex-1">
+                            <label class="block text-xs font-medium text-slate-300">Team Number</label>
+                            <input type="number" id="teamNumber" required class="mt-1 w-full p-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <button type="button" id="loadVideoBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-lg text-xs transition h-[38px] cursor-pointer whitespace-nowrap">
+                            📺 Load Video Pool
+                        </button>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300">Team Name</label>
+                        <input type="text" id="teamName" required class="mt-1 w-full p-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300">Artifacts Scored</label>
+                            <input type="number" id="artifacts" min="0" required class="mt-1 w-full p-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300">Avg Cycle Time (s)</label>
+                            <input type="number" id="cycleTime" min="0" step="0.1" required class="mt-1 w-full p-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300">Robot Score Contribution</label>
+                            <input type="number" id="robotScore" min="0" required class="mt-1 w-full p-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-300">Total Alliance Score</label>
+                            <input type="number" id="allianceScore" min="1" required class="mt-1 w-full p-2 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2 px-4 rounded-lg text-sm transition shadow-md cursor-pointer">
+                        Submit Match Data
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-slate-800 p-5 rounded-xl shadow-xl border border-slate-700 flex-1 min-h-[250px] flex flex-col overflow-hidden">
+                <div class="flex items-center justify-between mb-3 shrink-0">
+                    <h2 class="text-lg font-bold text-amber-400">Team Leaderboard</h2>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-medium text-slate-300 whitespace-nowrap">Sort:</label>
+                        <select id="sortBy" class="p-1.5 bg-slate-900 border border-slate-600 rounded-lg text-xs text-white focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <option value="artifacts">Max Artifacts</option>
+                            <option value="cycleTime">Fastest Cycle</option>
+                            <option value="contribution">Alliance Cont. %</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto rounded-lg border border-slate-700 flex-1">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-slate-900 text-slate-300 text-xs border-b border-slate-700 z-10">
+                            <tr>
+                                <th class="p-3 font-semibold text-center w-12">Rank</th>
+                                <th class="p-3 font-semibold">Team</th>
+                                <th class="p-3 font-semibold text-center">Max Art.</th>
+                                <th class="p-3 font-semibold text-center">Avg Cyc</th>
+                                <th class="p-3 font-semibold text-center">Cont. %</th>
+                                <th class="p-3 font-semibold text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboardBody" class="divide-y divide-slate-700/50 text-slate-100 text-sm">
+                            </tbody>
+                    </table>
+                    <div id="emptyState" class="text-center py-8 text-slate-500 text-sm hidden">
+                        No team data logged yet.
+                    </div>
                 </div>
             </div>
 
-            <div class="overflow-x-auto rounded-lg border border-slate-700">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-900 text-slate-300 text-sm border-b border-slate-700">
-                            <th class="p-4 font-semibold">Rank</th>
-                            <th class="p-4 font-semibold">Team</th>
-                            <th class="p-4 font-semibold text-center">Max Artifacts</th>
-                            <th class="p-4 font-semibold text-center">Avg Cycle (s)</th>
-                            <th class="p-4 font-semibold text-center">Alliance Cont. %</th>
-                            <th class="p-4 font-semibold text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboardBody" class="divide-y divide-slate-700/50 text-slate-100">
-                        </tbody>
-                </table>
-            </div>
-            <div id="emptyState" class="text-center py-12 text-slate-500 hidden">
-                No team data logged yet. Fill out the form to populate the leaderboard!
-            </div>
         </div>
     </div>
 
@@ -101,18 +126,24 @@
         const sortBySelect = document.getElementById('sortBy');
         const leaderboardBody = document.getElementById('leaderboardBody');
         const emptyState = document.getElementById('emptyState');
-        const fetchVideosBtn = document.getElementById('fetchVideosBtn');
+        const loadVideoBtn = document.getElementById('loadVideoBtn');
+        const videoPlaceholder = document.getElementById('videoPlaceholder');
+        const videoFrame = document.getElementById('videoFrame');
 
-        // Dynamic Video Finder Link Logic
-        fetchVideosBtn.addEventListener('click', () => {
+        // Dynamic Embedded Video Logic
+        loadVideoBtn.addEventListener('click', () => {
             const teamNumber = document.getElementById('teamNumber').value.trim();
             if (!teamNumber) {
                 alert('Please enter a team number first!');
                 return;
             }
-            // Directs the scout to the specific team profile on FTCVideos
-            const url = `https://ftcvideos.org/?team=${teamNumber}`;
-            window.open(url, '_blank');
+            
+            // To embed inside an iframe seamlessly without blocking, we query YouTube's embed search stream for that team
+            const embedUrl = `https://www.youtube.com/embed?listType=search&list=FTC+Decode+Team+${teamNumber}+Match`;
+            
+            videoPlaceholder.classList.add('hidden');
+            videoFrame.classList.remove('hidden');
+            videoFrame.src = embedUrl;
         });
 
         // Form submission logic
@@ -147,6 +178,11 @@
             saveData();
             renderLeaderboard();
             matchForm.reset();
+            
+            // Clear out video workspace on successful submission
+            videoFrame.src = "";
+            videoFrame.classList.add('hidden');
+            videoPlaceholder.classList.remove('hidden');
         });
 
         function deleteTeam(index) {
@@ -186,20 +222,16 @@
 
                 return `
                     <tr class="hover:bg-slate-700/30 transition">
-                        <td class="p-4 font-bold text-center w-16">${rankBadge}</td>
-                        <td class="p-4">
+                        <td class="p-3 font-bold text-center">${rankBadge}</td>
+                        <td class="p-3">
                             <span class="font-bold text-amber-500">#${team.number}</span>
-                            <div class="text-sm text-slate-400 font-medium">${team.name}</div>
+                            <div class="text-xs text-slate-400">${team.name}</div>
                         </td>
-                        <td class="p-4 text-center font-semibold text-emerald-400">${team.artifacts}</td>
-                        <td class="p-4 text-center font-semibold text-cyan-400">${team.cycleTime}s</td>
-                        <td class="p-4 text-center">
-                            <div class="inline-block px-2.5 py-1 rounded bg-slate-900 border border-slate-700 font-mono text-xs text-indigo-300">
-                                ${team.contribution}%
-                            </div>
-                        </td>
-                        <td class="p-4 text-center">
-                            <button onclick="deleteTeam(${index})" class="text-xs font-semibold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-2.5 py-1 rounded border border-rose-500/30 cursor-pointer transition">
+                        <td class="p-3 text-center font-semibold text-emerald-400">${team.artifacts}</td>
+                        <td class="p-3 text-center font-semibold text-cyan-400">${team.cycleTime}s</td>
+                        <td class="p-3 text-center text-indigo-300 font-mono text-xs">${team.contribution}%</td>
+                        <td class="p-3 text-center">
+                            <button onclick="deleteTeam(${index})" class="text-xs text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/20 cursor-pointer transition">
                                 Delete
                             </button>
                         </td>
