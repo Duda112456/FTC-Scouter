@@ -20,9 +20,14 @@
         <div class="bg-slate-800 p-6 rounded-xl shadow-xl border border-slate-700 h-fit">
             <h2 class="text-xl font-bold mb-4 text-amber-400 border-b border-slate-700 pb-2">Log Match Data</h2>
             <form id="matchForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-slate-300">Team Number</label>
-                    <input type="number" id="teamNumber" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
+                <div class="flex items-end gap-2">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-slate-300">Team Number</label>
+                        <input type="number" id="teamNumber" required class="mt-1 w-full p-2.5 bg-slate-900 border border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-white">
+                    </div>
+                    <button type="button" id="fetchVideosBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-3 rounded-lg text-sm transition h-[46px] cursor-pointer whitespace-nowrap">
+                        🔍 Find Videos
+                    </button>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-300">Team Name</label>
@@ -90,13 +95,25 @@
     </div>
 
     <script>
-        // App State initialized from LocalStorage
         let teamsData = JSON.parse(localStorage.getItem('ftcDecodeData')) || [];
 
         const matchForm = document.getElementById('matchForm');
         const sortBySelect = document.getElementById('sortBy');
         const leaderboardBody = document.getElementById('leaderboardBody');
         const emptyState = document.getElementById('emptyState');
+        const fetchVideosBtn = document.getElementById('fetchVideosBtn');
+
+        // Dynamic Video Finder Link Logic
+        fetchVideosBtn.addEventListener('click', () => {
+            const teamNumber = document.getElementById('teamNumber').value.trim();
+            if (!teamNumber) {
+                alert('Please enter a team number first!');
+                return;
+            }
+            // Directs the scout to the specific team profile on FTCVideos
+            const url = `https://ftcvideos.org/?team=${teamNumber}`;
+            window.open(url, '_blank');
+        });
 
         // Form submission logic
         matchForm.addEventListener('submit', (e) => {
@@ -109,20 +126,15 @@
             const robotScore = parseInt(document.getElementById('robotScore').value);
             const allianceScore = parseInt(document.getElementById('allianceScore').value);
 
-            // Calculate contribution percentage safely
             const contributionPct = Math.min(Math.round((robotScore / allianceScore) * 100), 100);
-
-            // Check if team already exists to update or create new entry
             const existingTeamIndex = teamsData.findIndex(t => t.number === teamNumber);
 
             if (existingTeamIndex > -1) {
-                // If team exists, track their best/average metrics
                 const team = teamsData[existingTeamIndex];
-                team.artifacts = Math.max(team.artifacts, artifacts); // Keep peak artifacts
-                team.cycleTime = parseFloat(((team.cycleTime + cycleTime) / 2).toFixed(2)); // Rolling average cycle time
-                team.contribution = Math.max(team.contribution, contributionPct); // Peak contribution percentage
+                team.artifacts = Math.max(team.artifacts, artifacts);
+                team.cycleTime = parseFloat(((team.cycleTime + cycleTime) / 2).toFixed(2));
+                team.contribution = Math.max(team.contribution, contributionPct);
             } else {
-                // New team entry
                 teamsData.push({
                     number: teamNumber,
                     name: teamName,
@@ -132,38 +144,32 @@
                 });
             }
 
-            // Save and render
             saveData();
             renderLeaderboard();
             matchForm.reset();
         });
 
-        // Delete a team entry
         function deleteTeam(index) {
             teamsData.splice(index, 1);
             saveData();
             renderLeaderboard();
         }
 
-        // Save to LocalStorage
         function saveData() {
             localStorage.setItem('ftcDecodeData', JSON.stringify(teamsData));
         }
 
-        // Render sorted leaderboard
         function renderLeaderboard() {
             const sortBy = sortBySelect.value;
             
-            // Sorting logic based on metric selected
             teamsData.sort((a, b) => {
                 if (sortBy === 'cycleTime') {
-                    return a.cycleTime - b.cycleTime; // Lower is better for cycle times
+                    return a.cycleTime - b.cycleTime;
                 } else {
-                    return b[sortBy] - a[sortBy]; // Higher is better for artifacts/contribution
+                    return b[sortBy] - a[sortBy];
                 }
             });
 
-            // Toggle empty state UI
             if (teamsData.length === 0) {
                 emptyState.classList.remove('hidden');
                 leaderboardBody.innerHTML = '';
@@ -172,10 +178,8 @@
                 emptyState.classList.add('hidden');
             }
 
-            // Build rows
             leaderboardBody.innerHTML = teamsData.map((team, index) => {
                 let rankBadge = index + 1;
-                // Add styling for podium ranks
                 if (index === 0) rankBadge = '🥇';
                 else if (index === 1) rankBadge = '🥈';
                 else if (index === 2) rankBadge = '🥉';
@@ -204,10 +208,7 @@
             }).join('');
         }
 
-        // Event listener for sorting dynamic re-render
         sortBySelect.addEventListener('change', renderLeaderboard);
-
-        // Initial paint
         renderLeaderboard();
     </script>
 </body>
